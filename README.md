@@ -9,40 +9,23 @@ Humidity Balancer là đồ án IoT trong lĩnh vực Smart Home. ESP32 đọc �
 ## Kiến trúc hệ thống
 
 ```mermaid
-flowchart LR
-    subgraph Device["1. Thiết bị"]
-        Sensor["SHT31 và hai công tắc phao"]
-        Relay["Hai relay → máy tạo ẩm / hút ẩm"]
-    end
-    subgraph Edge["2. Gateway"]
-        ESP["ESP32 · điều khiển cục bộ"]
-    end
-    subgraph Server["3. Máy chủ · Docker Compose"]
-        MQTT["Mosquitto"]
-        Ingest["Python ingest · paho-mqtt"]
-        Queue["RabbitMQ"]
-        Writer["Python writer · pika"]
-        DB["InfluxDB"]
-    end
-    subgraph App["4. Ứng dụng"]
-        NodeRed["Node-RED Dashboard"]
-        Grafana["Grafana"]
-    end
-    Sensor -->|"I2C / GPIO"| ESP
-    ESP -->|"GPIO"| Relay
-    ESP -->|"MQTT/TLS · 8883"| MQTT
-    MQTT -.->|"Lệnh MQTT"| ESP
-    MQTT -->|"MQTT"| Ingest
-    Ingest -->|"AMQP 0-9-1"| Queue
-    Queue -->|"AMQP 0-9-1"| Writer
-    Writer -->|"HTTP"| DB
-    MQTT -->|"MQTT qua WSS"| NodeRed
-    NodeRed -.->|"Lệnh qua WSS"| MQTT
-    DB -->|"Truy vấn HTTP(S)"| Grafana
+flowchart TB
+    Hardware["1. Thiết bị<br/>SHT31, phao và hai relay"]
+    ESP["2. Gateway<br/>ESP32 · điều khiển cục bộ"]
+    Broker["3. Máy chủ<br/>Mosquitto"]
+    History["Python ingest → RabbitMQ<br/>→ Python writer → InfluxDB"]
+    Dashboard["4. Ứng dụng<br/>Node-RED Dashboard"]
+    Grafana["4. Ứng dụng<br/>Grafana"]
+
+    Hardware <-->|"I2C / GPIO"| ESP
+    ESP <-->|"MQTT qua TLS · 8883"| Broker
+    Broker <-->|"MQTT qua WSS"| Dashboard
+    Broker -->|"MQTT"| History
+    History -->|"HTTP(S)"| Grafana
 ```
 
 - **Thiết bị và gateway.** SHT31 đo qua I2C (địa chỉ mặc định `0x44`). Hai công tắc phao báo bình tạo ẩm cạn và bình hút ẩm đầy. Firmware dự kiến dùng Arduino cho ESP32, lập lịch đọc mỗi 5–10 giây bằng `millis()` và tính điểm sương từ RH và nhiệt độ.
-- **Máy chủ.** Tiến trình ingest nhận MQTT, kiểm tra JSON rồi đưa dữ liệu vào RabbitMQ. Hàng đợi bền vững và bản tin persistent giữ các bản tin đã vào hàng đợi khi tiến trình ghi tạm dừng. Tiến trình ghi chỉ xác nhận bản tin sau khi ghi thành công vào InfluxDB.
+- **Máy chủ.** Các dịch vụ chạy bằng Docker Compose. Tiến trình ingest nhận MQTT, kiểm tra JSON rồi đưa dữ liệu vào RabbitMQ qua AMQP 0-9-1. Hàng đợi bền vững và bản tin persistent giữ các bản tin đã vào hàng đợi khi tiến trình ghi tạm dừng. Tiến trình ghi chỉ xác nhận bản tin sau khi ghi thành công vào InfluxDB qua HTTP.
 - **Ứng dụng.** Node-RED hiển thị số liệu, trạng thái máy và cảnh báo theo thời gian thực, đồng thời gửi lệnh điều khiển. Grafana hiển thị lịch sử RH và nhiệt độ.
 
 ## Điều khiển độ ẩm
@@ -118,5 +101,3 @@ Mục tiêu kiểm thử gồm sai số sau hiệu chuẩn trong **±3 điểm p
 | `dashboard/` | Flow Node-RED và dashboard Grafana |
 | `docs/` | Sơ đồ, đặc tả MQTT và tài liệu kiểm thử |
 | `docker-compose.yml`, `.env.example` | Cấu hình chạy máy chủ và mẫu biến môi trường |
-
-*Nguồn thiết kế — Project Proposal v2.0 và báo cáo Checkpoint 1 của Nhóm 12.*
