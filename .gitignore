@@ -1,0 +1,10 @@
+# Cấu hình cục bộ và thông tin xác thực
+.env
+.env.*
+!.env.example
+
+# Tệp sinh ra khi phát triển
+.venv/
+__pycache__/
+*.py[cod]
+.pio/

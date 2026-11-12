@@ -91,13 +91,16 @@ Checkpoint 1 ước tính khoảng **690.000 đồng** cho linh kiện, vật t�
 
 Mục tiêu kiểm thử gồm sai số sau hiệu chuẩn trong **±3 điểm phần trăm RH**, phản hồi lệnh **≤ 2 giây** trong điều kiện mạng bình thường và dashboard cập nhật dữ liệu **≤ 30 giây**.
 
-## Cấu trúc kho dự kiến
+## Cấu trúc kho
+
+Các thư mục dưới đây có hướng dẫn ngắn cho từng phần. Các dịch vụ sẽ được khai báo trong Compose khi có cấu hình triển khai.
 
 | Đường dẫn | Nội dung |
 | --- | --- |
-| `firmware/` | Firmware ESP32 và cấu hình mô phỏng |
-| `server/ingest/` | Nhận MQTT, kiểm tra JSON và đưa bản tin vào RabbitMQ |
-| `server/writer/` | Nhận bản tin từ RabbitMQ và ghi vào InfluxDB |
-| `dashboard/` | Flow Node-RED và dashboard Grafana |
-| `docs/` | Sơ đồ, đặc tả MQTT và tài liệu kiểm thử |
-| `docker-compose.yml`, `.env.example` | Cấu hình chạy máy chủ và mẫu biến môi trường |
+| [`firmware/`](firmware/) | Firmware ESP32 và cấu hình mô phỏng |
+| [`server/ingest/`](server/ingest/) | Nhận MQTT, kiểm tra JSON và đưa bản tin vào RabbitMQ |
+| [`server/writer/`](server/writer/) | Nhận bản tin từ RabbitMQ và ghi vào InfluxDB |
+| [`dashboard/`](dashboard/) | Flow Node-RED và dashboard Grafana |
+| [`docs/`](docs/) | Đặc tả yêu cầu, sơ đồ đấu nối và tài liệu kiểm thử |
+| [`docker-compose.yml`](docker-compose.yml) | Khung khai báo dịch vụ máy chủ |
+| [`.env.example`](.env.example) | Mẫu biến môi trường cho dịch vụ máy chủ |
